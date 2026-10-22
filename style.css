@@ -235,12 +235,12 @@ body.fs-fallback #poster {
 .scene-art {
   position: absolute;
   left: 50%;
-  bottom: var(--k);
-  height: 62cqh;
-  aspect-ratio: 908 / 812;
+  bottom: 0;
+  width: calc(100cqw - 2 * var(--k) - 4cqmin);
+  aspect-ratio: 2064 / 512;
   translate: -50% 0;
-  background: url("img/kadaw-lineart.png?v=1") center / contain no-repeat;
-  opacity: 0.55;
+  background: url("img/kadaw-lineart.png?v=3") center bottom / contain no-repeat;
+  opacity: 0.5;
   pointer-events: none;
 }
 
@@ -424,16 +424,6 @@ body.fs-fallback #festival {
   top: 100%;
   left: 50%;
   scale: 0.6; /* shrinks toward the string end (transform-origin set per style) */
-  animation: lamp-blink 1.4s ease-in-out var(--delay) infinite alternate;
-}
-
-.lamp-fan::after {
-  animation: lamp-blink 1.4s ease-in-out var(--delay) infinite alternate;
-}
-
-@keyframes lamp-blink {
-  from { opacity: 1; }
-  to { opacity: 0.3; }
 }
 
 .lamp-cylinder i { transform-origin: 50% -1.6cqmin; }
