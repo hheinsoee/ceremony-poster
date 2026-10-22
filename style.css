@@ -84,12 +84,12 @@ label.row {
   flex-wrap: nowrap;
 }
 
-.f-stroke-width {
+.row input[type="range"] {
   flex: 1;
   min-width: 0;
 }
 
-.f-stroke-out {
+.row output {
   min-width: 2.5em;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -203,9 +203,10 @@ body.fs-fallback #poster {
   --w: 700;
   --sc: #14532d;
   --sw: 0px;
+  --s: 1;
   margin: 0;
   font-family: Padauk, "Noto Sans Myanmar", sans-serif;
-  font-size: min(7.5cqh, 6cqw);
+  font-size: calc(min(7.5cqh, 6cqw) * var(--s));
   line-height: 1.5;
   text-align: center;
   overflow-wrap: break-word;
@@ -222,7 +223,7 @@ body.fs-fallback #poster {
   transform: translateX(-50%);
   max-width: calc(100% - 8cqmin);
   width: max-content;
-  font-size: min(5.5cqh, 4.5cqw);
+  font-size: calc(min(5.5cqh, 4.5cqw) * var(--s));
   padding: 1cqh 5cqmin;
   border: 0.4cqmin solid #e6c75a;
   border-radius: 999px;

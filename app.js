@@ -4,7 +4,7 @@ const lines = [
   { label: "Title line 3", text: "Title line 3", bold: true },
   { label: "Title line 4", text: "Title line 4", bold: true },
   { label: "Date line", text: "Date · Venue", bold: false },
-].map((line) => ({ color: "#ffffff", strokeColor: "#14532d", strokeWidth: 0, ...line }));
+].map((line) => ({ size: 100, color: "#ffffff", strokeColor: "#14532d", strokeWidth: 0, ...line }));
 
 const poster = document.getElementById("poster");
 const stage = document.getElementById("stage");
@@ -19,6 +19,7 @@ function render(i) {
   el.style.setProperty("--w", line.bold ? "700" : "400");
   el.style.setProperty("--sc", line.strokeColor);
   el.style.setProperty("--sw", `${line.strokeWidth}px`);
+  el.style.setProperty("--s", line.size / 100);
 }
 
 /* ---------- Line controls ---------- */
@@ -30,6 +31,7 @@ lines.forEach((line, i) => {
   const group = template.content.firstElementChild.cloneNode(true);
   const q = (cls) => group.querySelector(cls);
   const strokeOut = q(".f-stroke-out");
+  const sizeOut = q(".f-size-out");
 
   q("legend").textContent = line.label;
   q(".f-text").value = line.text;
@@ -38,6 +40,8 @@ lines.forEach((line, i) => {
   q(".f-stroke-color").value = line.strokeColor;
   q(".f-stroke-width").value = line.strokeWidth;
   strokeOut.textContent = line.strokeWidth;
+  q(".f-size").value = line.size;
+  sizeOut.textContent = `${line.size}%`;
 
   const bind = (cls, event, apply) =>
     q(cls).addEventListener(event, (e) => {
@@ -52,6 +56,10 @@ lines.forEach((line, i) => {
   bind(".f-stroke-width", "input", (t) => {
     line.strokeWidth = Number(t.value);
     strokeOut.textContent = t.value;
+  });
+  bind(".f-size", "input", (t) => {
+    line.size = Number(t.value);
+    sizeOut.textContent = `${t.value}%`;
   });
 
   lineControls.append(group);
