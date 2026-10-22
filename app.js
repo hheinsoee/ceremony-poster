@@ -4,7 +4,7 @@ const lines = [
   { label: "Title line 3", text: "Title line 3", bold: true },
   { label: "Title line 4", text: "Title line 4", bold: true },
   { label: "Date line", text: "Date · Venue", bold: false },
-].map((line) => ({ size: 100, color: "#ffffff", strokeColor: "#14532d", strokeWidth: 0, ...line }));
+].map((line) => ({ size: 100, color: "#ffffff", strokeColor: "#14532d", strokeWidth: 0, dx: 0, dy: 0, ...line }));
 
 /* ---------- Persistence: line settings → localStorage, background Blob → IndexedDB ---------- */
 
@@ -14,7 +14,7 @@ try {
   const saved = JSON.parse(localStorage.getItem(LINES_KEY));
   if (Array.isArray(saved)) {
     lines.forEach((line, i) => {
-      for (const key of ["text", "bold", "color", "strokeColor", "strokeWidth", "size"]) {
+      for (const key of ["text", "bold", "color", "strokeColor", "strokeWidth", "size", "dx", "dy"]) {
         if (typeof saved[i]?.[key] === typeof line[key]) line[key] = saved[i][key];
       }
     });
@@ -70,6 +70,9 @@ function applyStyle(i) {
   el.style.setProperty("--sc", line.strokeColor);
   el.style.setProperty("--sw", `${line.strokeWidth}px`);
   el.style.setProperty("--s", line.size / 100);
+  // Offset from the default slot, in % of poster width / height
+  el.style.setProperty("--dx", line.dx);
+  el.style.setProperty("--dy", line.dy);
 }
 
 /* ---------- Inline text editing on the poster ---------- */
@@ -98,8 +101,76 @@ lineEls.forEach((el, i) => {
     document.execCommand("insertText", false, text);
   });
   el.addEventListener("focus", () => openToolbar(i));
+  enableDrag(el, i);
   applyStyle(i);
 });
+
+/* ---------- Drag to move (unfocused line: drag moves, click edits) ---------- */
+
+function enableDrag(el, i) {
+  // Stop the browser from focusing / selecting on press; we decide on release.
+  el.addEventListener("mousedown", (e) => {
+    if (document.activeElement !== el) e.preventDefault();
+  });
+
+  el.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 || document.activeElement === el) return;
+    e.preventDefault();
+    const line = lines[i];
+    const box = poster.getBoundingClientRect();
+    const start = { x: e.clientX, y: e.clientY, dx: line.dx, dy: line.dy };
+    let moved = false;
+    el.setPointerCapture(e.pointerId);
+
+    const onMove = (ev) => {
+      const mx = ev.clientX - start.x;
+      const my = ev.clientY - start.y;
+      if (!moved) {
+        if (Math.hypot(mx, my) < 4) return;
+        moved = true;
+        document.activeElement?.blur();
+        closeToolbar();
+        el.classList.add("dragging");
+      }
+      line.dx = start.dx + (mx / box.width) * 100;
+      line.dy = start.dy + (my / box.height) * 100;
+      applyStyle(i);
+    };
+
+    const onUp = (ev) => {
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onUp);
+      el.classList.remove("dragging");
+      if (moved) {
+        saveLines();
+      } else {
+        el.focus();
+        placeCaret(el, ev.clientX, ev.clientY);
+      }
+    };
+
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onUp);
+  });
+}
+
+function placeCaret(el, x, y) {
+  let range = null;
+  const pos = document.caretPositionFromPoint?.(x, y);
+  if (pos) {
+    range = document.createRange();
+    range.setStart(pos.offsetNode, pos.offset);
+  } else {
+    range = document.caretRangeFromPoint?.(x, y);
+  }
+  if (!range || !el.contains(range.startContainer)) return;
+  range.collapse(true);
+  const sel = getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
 
 /* ---------- Floating style toolbar for the line being edited ---------- */
 
@@ -160,6 +231,10 @@ bind(".f-stroke-width", "input", (line, t) => {
 bind(".f-size", "input", (line, t) => {
   line.size = Number(t.value);
   tq(".f-size-out").textContent = `${t.value}%`;
+});
+bind(".f-reset-pos", "click", (line) => {
+  line.dx = 0;
+  line.dy = 0;
 });
 
 // Close when interacting with anything other than the toolbar or another poster line.

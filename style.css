@@ -219,6 +219,8 @@ body.fs-fallback #poster {
   --sc: #14532d;
   --sw: 0px;
   --s: 1;
+  --dx: 0;
+  --dy: 0;
   margin: 0;
   font-family: Padauk, "Noto Sans Myanmar", sans-serif;
   font-size: calc(min(7.5cqh, 6cqw) * var(--s));
@@ -229,6 +231,7 @@ body.fs-fallback #poster {
   font-weight: var(--w);
   -webkit-text-stroke: var(--sw) var(--sc);
   paint-order: stroke fill;
+  translate: calc(var(--dx) * 1cqw) calc(var(--dy) * 1cqh);
 }
 
 /* Inline editing (editor only). The poster itself is non-selectable so clicking
@@ -243,6 +246,16 @@ body.fs-fallback #poster {
   outline: none;
   user-select: text;
   -webkit-user-select: text;
+}
+
+/* Unfocused lines are dragged to move; focused lines take normal text selection. */
+.line[contenteditable]:not(:focus) {
+  cursor: move;
+  touch-action: none;
+}
+
+.line.dragging {
+  opacity: 0.85;
 }
 
 .line[contenteditable]:hover,
