@@ -362,9 +362,17 @@ body.fs-fallback .line:empty {
   left: 50%;
   transform: translateX(-50%);
   max-width: calc(100% - 2 * var(--k) - 6cqmin);
+  /* Gold frame plate (img 420x179 at 1x): text sits in its inner box,
+     which starts 32% from the top and ends 20% from the bottom. */
+  box-sizing: border-box;
+  min-width: 6.8em;
+  height: 2.9em;
   width: max-content;
+  padding: 0.94em 0.7em 0.58em;
+  line-height: 1.38em;
   white-space: nowrap;
   font-size: calc(2.5cqw * var(--s));
+  background: url("img/date-frame.png?v=1") center / 100% 100% no-repeat;
 }
 
 /* ---------- Thadingyut lights (presentation only; transform/opacity animations) ---------- */
