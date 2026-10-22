@@ -5,18 +5,18 @@ function todayDdMmYyyy() {
 }
 
 const lines = [
-  { label: "Title line 1", text: "ဆေးတက္ကသိုလ်(၂) ရန်ကုန်", bold: true, color: "#f4f1d0", size: 70 },
-  { label: "Title line 2", text: "ကလေးကျန်းမာဌာန", bold: false, color: "#ffffff", size: 65 },
-  { label: "Title line 3", text: "ဆရာကြီး၊ ဆရာမကြီး များအား", bold: false, color: "#fff27a", size: 65 },
-  { label: "Title line 4", text: "သီတင်းကျွတ်ဂါရဝ ဆရာကန်တော့ပွဲ", bold: true, color: "#ffbf1f", size: 140 },
+  { label: "Title line 1", text: "ဆေးတက္ကသိုလ်(၂) ရန်ကုန်", bold: true, color: "#f4f1d0", size: 60 },
+  { label: "Title line 2", text: "ကလေးကျန်းမာဌာန", bold: false, color: "#ffffff", size: 50 },
+  { label: "Title line 3", text: "ဆရာကြီး၊ ဆရာမကြီး များအား", bold: false, color: "#fff27a", size: 50 },
+  { label: "Title line 4", text: "သီတင်းကျွတ်ဂါရဝ ဆရာကန်တော့ပွဲ", bold: true, color: "#ffbf1f", size: 120 },
   { label: "Date line", text: todayDdMmYyyy(), bold: false },
 ].map((line) => ({ size: 100, color: "#ffffff", strokeColor: "#14532d", strokeWidth: 0, dx: 0, dy: 0, ...line }));
 
 /* ---------- Persistence: line settings → localStorage ---------- */
 
 // Versioned so changed defaults replace older saved layouts.
-const LINES_KEY = "ceremony-poster:lines:v5";
-for (const old of ["", ":v2", ":v3", ":v4"]) localStorage.removeItem(`ceremony-poster:lines${old}`);
+const LINES_KEY = "ceremony-poster:lines:v6";
+for (const old of ["", ":v2", ":v3", ":v4", ":v5"]) localStorage.removeItem(`ceremony-poster:lines${old}`);
 
 try {
   const saved = JSON.parse(localStorage.getItem(LINES_KEY));
