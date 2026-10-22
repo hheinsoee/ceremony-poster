@@ -3,7 +3,7 @@ const lines = [
   { label: "Title line 2", text: "ကလေးကျန်းမာ ပညာဌာန", bold: false, color: "#ffffff", size: 50 },
   { label: "Title line 3", text: "ဆရာကြီး၊ ဆရာမကြီး များအား", bold: false, color: "#fff27a", size: 50 },
   { label: "Title line 4", text: "သီတင်းကျွတ်ဂါရဝ ဆရာကန်တော့ပွဲ", bold: true, color: "#ffbf1f", size: 120 },
-  { label: "Date line", text: "၂၃၊ ၁၀၊ ၂၀၂၆", bold: false },
+  { label: "Date line", text: "၂၃၊ ၁၀၊ ၂၀၂၆", bold: false, color: "#e8a704" }, // colour sampled from img/date-frame.png
 ].map((line) => ({ size: 100, color: "#ffffff", strokeColor: "#14532d", strokeWidth: 0, dx: 0, dy: 0, ...line }));
 
 /* ---------- Persistence: line settings → localStorage ---------- */
