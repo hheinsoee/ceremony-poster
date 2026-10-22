@@ -154,6 +154,7 @@ body.fs-fallback #poster {
 
 #poster {
   --bg-image: none;
+  --frame-image: none;
   container-type: size;
   position: relative;
   flex: none;
@@ -169,6 +170,22 @@ body.fs-fallback #poster {
   background-position: center;
   background-repeat: no-repeat;
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+}
+
+/* Uploaded frame art (e.g. kanote border) stretched over the whole poster,
+   above the background and below the text. Replaces the CSS gold frame. */
+#poster::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--frame-image) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+#poster.has-frame-art .frame,
+#poster.has-frame-art .frame::before {
+  border-color: transparent;
+  box-shadow: none;
 }
 
 /* Double gold frame with dark keyline */

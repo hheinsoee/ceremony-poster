@@ -1,9 +1,9 @@
 const lines = [
-  { label: "Title line 1", text: "Title line 1", bold: true },
-  { label: "Title line 2", text: "Title line 2", bold: true },
-  { label: "Title line 3", text: "Title line 3", bold: true },
-  { label: "Title line 4", text: "Title line 4", bold: true },
-  { label: "Date line", text: "Date · Venue", bold: false },
+  { label: "Title line 1", text: "သီတင်းကျွတ်ပွဲတော်", bold: true },
+  { label: "Title line 2", text: "ဆရာ၊ မိဘ၊ သက်ကြီးဝါကြီးများ", bold: true },
+  { label: "Title line 3", text: "ပူဇော်ကန်တော့ပွဲ", bold: true },
+  { label: "Title line 4", text: "၂၀၂၆ ခုနှစ်", bold: true },
+  { label: "Date line", text: "နေ့စွဲ · နေရာ", bold: false },
 ].map((line) => ({ size: 100, color: "#ffffff", strokeColor: "#14532d", strokeWidth: 0, dx: 0, dy: 0, ...line }));
 
 /* ---------- Persistence: line settings → localStorage, background Blob → IndexedDB ---------- */
@@ -38,7 +38,7 @@ const dbReady = new Promise((resolve, reject) => {
   req.onerror = () => reject(req.error);
 });
 
-async function bgStore(mode, op) {
+async function fileStore(mode, op) {
   const db = await dbReady;
   return new Promise((resolve, reject) => {
     const req = op(db.transaction("files", mode).objectStore("files"));
@@ -46,16 +46,6 @@ async function bgStore(mode, op) {
     req.onerror = () => reject(req.error);
   });
 }
-
-const loadBg = () => bgStore("readonly", (s) => s.get("background"));
-const saveBg = (blob) =>
-  bgStore("readwrite", (s) => s.put(blob, "background")).catch((err) =>
-    console.warn("Could not save background", err),
-  );
-const deleteBg = () =>
-  bgStore("readwrite", (s) => s.delete("background")).catch((err) =>
-    console.warn("Could not delete background", err),
-  );
 
 const poster = document.getElementById("poster");
 const stage = document.getElementById("stage");
@@ -249,45 +239,66 @@ toolbar.addEventListener("keydown", (e) => {
 addEventListener("resize", placeToolbar);
 addEventListener("scroll", placeToolbar, true);
 
-/* ---------- Background ---------- */
+/* ---------- Image slots: background photo and frame art (e.g. kanote border) ---------- */
 
-const bgInput = document.getElementById("bg-input");
-let bgUrl = null;
+function imageSlot({ key, inputId, clearId, apply }) {
+  const input = document.getElementById(inputId);
+  const clearBtn = document.getElementById(clearId);
+  let url = null;
 
-function setBackground(url) {
-  if (bgUrl) URL.revokeObjectURL(bgUrl);
-  bgUrl = url;
-  poster.style.setProperty("--bg-image", url ? `url("${url}")` : "none");
-  document.getElementById("bg-clear").hidden = !url;
+  const set = (next) => {
+    if (url) URL.revokeObjectURL(url);
+    url = next;
+    apply(url);
+    clearBtn.hidden = !url;
+  };
+  const warn = (what) => (err) => console.warn(`Could not ${what} ${key}`, err);
+
+  input.addEventListener("change", () => {
+    const file = input.files[0];
+    if (!file) return;
+    const next = URL.createObjectURL(file);
+    // Some formats (e.g. iPhone HEIC in Chrome/Firefox) pass the picker but can't be decoded.
+    const probe = new Image();
+    probe.onload = () => {
+      set(next);
+      fileStore("readwrite", (s) => s.put(file, key)).catch(warn("save"));
+    };
+    probe.onerror = () => {
+      URL.revokeObjectURL(next);
+      input.value = "";
+      alert(`"${file.name}" can't be displayed in this browser (HEIC photos only work in Safari).\nPlease use a JPG, PNG or WebP image.`);
+    };
+    probe.src = next;
+  });
+
+  clearBtn.addEventListener("click", () => {
+    set(null);
+    input.value = "";
+    fileStore("readwrite", (s) => s.delete(key)).catch(warn("delete"));
+  });
+
+  fileStore("readonly", (s) => s.get(key))
+    .then((blob) => blob && !url && set(URL.createObjectURL(blob)))
+    .catch(warn("load"));
 }
 
-bgInput.addEventListener("change", () => {
-  const file = bgInput.files[0];
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  // Some formats (e.g. iPhone HEIC in Chrome/Firefox) pass the picker but can't be decoded.
-  const probe = new Image();
-  probe.onload = () => {
-    setBackground(url);
-    saveBg(file);
-  };
-  probe.onerror = () => {
-    URL.revokeObjectURL(url);
-    bgInput.value = "";
-    alert(`"${file.name}" can't be displayed in this browser (HEIC photos only work in Safari).\nPlease use a JPG, PNG or WebP image.`);
-  };
-  probe.src = url;
+imageSlot({
+  key: "background",
+  inputId: "bg-input",
+  clearId: "bg-clear",
+  apply: (url) => poster.style.setProperty("--bg-image", url ? `url("${url}")` : "none"),
 });
 
-document.getElementById("bg-clear").addEventListener("click", () => {
-  setBackground(null);
-  bgInput.value = "";
-  deleteBg();
+imageSlot({
+  key: "frame",
+  inputId: "frame-input",
+  clearId: "frame-clear",
+  apply: (url) => {
+    poster.style.setProperty("--frame-image", url ? `url("${url}")` : "none");
+    poster.classList.toggle("has-frame-art", !!url);
+  },
 });
-
-loadBg()
-  .then((blob) => blob && !bgUrl && setBackground(URL.createObjectURL(blob)))
-  .catch((err) => console.warn("Could not load background", err));
 
 /* ---------- Start / presentation ---------- */
 
