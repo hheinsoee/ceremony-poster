@@ -321,8 +321,8 @@ const WISHES_URL = "https://ceremony-wishes.hheinsoee.workers.dev/messages";
     }, true);
   }
 
-  // Hanging lamps swinging from the top border, kept clear of the centred title.
-  for (const [x, len, style] of [[18, 9, "fan"], [27, 15, "cylinder"], [73, 13, "fan"], [82, 8, "cylinder"]]) {
+  // Hanging lamp swinging from the top border, kept clear of the centred title.
+  for (const [x, len, style] of [[82, 8, "cylinder"]]) {
     add(`hanging-lamp lamp-${style}`, {
       x: `${x}%`,
       len: `${len}cqh`,
