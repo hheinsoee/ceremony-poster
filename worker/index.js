@@ -3,7 +3,7 @@
 
 const ALLOWED_ORIGINS = ["https://git.heinsoe.com", "null"]; // "null" = poster opened from file://
 const URL_RE = /https?:\/\/\S+|www\.\S+/gi;
-const MAX_CHARS = 60; // code points, after URL removal; longer messages get a reply instead of a lantern
+const MAX_CHARS = 100; // code points, after URL removal; longer messages get a reply instead of a lantern
 const MY_DIGITS = "၀၁၂၃၄၅၆၇၈၉";
 const TOO_LONG_REPLY =
   `စာသား ရှည်လွန်းနေပါတယ်။ စာလုံး ${String(MAX_CHARS).replace(/\d/g, (d) => MY_DIGITS[d])} လုံးအတွင်း ပြန်ပို့ပေးပါ။`;
