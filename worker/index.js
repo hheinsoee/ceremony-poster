@@ -3,7 +3,8 @@
 
 const ALLOWED_ORIGINS = ["https://git.heinsoe.com", "null"]; // "null" = poster opened from file://
 const URL_RE = /https?:\/\/\S+|www\.\S+/gi;
-const MAX_CHARS = 100; // code points, after URL removal; longer messages get a reply instead of a lantern
+const MAX_CHARS = 100; // code points after URL removal, not counting asat (်); longer messages get a reply
+const ASAT = "\u103A";
 const MY_DIGITS = "၀၁၂၃၄၅၆၇၈၉";
 const TOO_LONG_REPLY =
   `စာသား ရှည်လွန်းနေပါတယ်။ စာလုံး ${String(MAX_CHARS).replace(/\d/g, (d) => MY_DIGITS[d])} လုံးအတွင်း ပြန်ပို့ပေးပါ။`;
@@ -61,7 +62,7 @@ function collectMessages(updates, chatId, after) {
     if (typeof message.text !== "string" || message.text.startsWith("/")) continue;
     const text = message.text.replace(URL_RE, "").replace(/\s+/g, " ").trim();
     if (!text) continue;
-    if ([...text].length > MAX_CHARS) {
+    if ([...text].filter((c) => c !== ASAT).length > MAX_CHARS) {
       if (after > 0) tooLong.push(message.message_id);
       continue;
     }
