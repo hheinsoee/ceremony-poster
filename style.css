@@ -1,0 +1,285 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  height: 100svh;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  color: #1f2937;
+  background: #e5e7eb;
+}
+
+/* ---------- Editor panel ---------- */
+
+#controls {
+  overflow-y: auto;
+  padding: 16px;
+  background: #fff;
+  border-right: 1px solid #d1d5db;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#controls h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.group {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.group h2,
+.group legend {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.group h2 {
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.f-text {
+  width: 100%;
+  padding: 6px 8px;
+  font: 15px/1.6 Padauk, "Noto Sans Myanmar", sans-serif;
+  border: 1px solid #9ca3af;
+  border-radius: 6px;
+}
+
+label.row {
+  flex-wrap: nowrap;
+}
+
+.f-stroke-width {
+  flex: 1;
+  min-width: 0;
+}
+
+.f-stroke-out {
+  min-width: 2.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="color"] {
+  width: 32px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #9ca3af;
+  border-radius: 4px;
+  background: none;
+}
+
+button {
+  font: inherit;
+  padding: 6px 12px;
+  border: 1px solid #9ca3af;
+  border-radius: 6px;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+#start-btn {
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: #15803d;
+  border-color: #166534;
+}
+
+/* ---------- Preview stage ---------- */
+
+#stage {
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  min-width: 0;
+  min-height: 0;
+}
+
+#stage:fullscreen {
+  padding: 0;
+}
+
+/* Presenting: poster fills the whole screen, whatever its ratio */
+#stage:fullscreen #poster,
+body.fs-fallback #poster {
+  width: 100cqw;
+  height: 100cqh;
+  box-shadow: none;
+}
+
+/* ---------- Poster (4:3 preview; everything inside scales with cq units) ---------- */
+
+#poster {
+  --bg-image: none;
+  container-type: size;
+  position: relative;
+  flex: none;
+  width: min(100cqw, 100cqh * 4 / 3);
+  height: min(100cqh, 100cqw * 3 / 4);
+  overflow: hidden;
+  background-color: #0b4f23;
+  background-image:
+    var(--bg-image),
+    radial-gradient(ellipse at 50% 30%, rgb(255 255 255 / 0.18), transparent 60%),
+    linear-gradient(#1d7a3f, #0b4f23);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+}
+
+/* Double gold frame with dark keyline */
+.frame {
+  position: absolute;
+  inset: 1.5cqmin;
+  border: 0.9cqmin solid #c9a227;
+  border-radius: 2cqmin;
+  box-shadow:
+    0 0 0 0.3cqmin #7a5c10 inset,
+    0 0 0 0.3cqmin #7a5c10;
+}
+
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 1cqmin;
+  border: 0.35cqmin solid #e6c75a;
+  border-radius: 1.4cqmin;
+  pointer-events: none;
+}
+
+.titles {
+  position: absolute;
+  inset: 0 4cqmin auto;
+  max-height: 65cqh;
+  padding-top: 8cqh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2cqh;
+}
+
+.line {
+  --c: #ffffff;
+  --w: 700;
+  --sc: #14532d;
+  --sw: 0px;
+  margin: 0;
+  font-family: Padauk, "Noto Sans Myanmar", sans-serif;
+  font-size: min(7.5cqh, 6cqw);
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: break-word;
+  color: var(--c);
+  font-weight: var(--w);
+  -webkit-text-stroke: var(--sw) var(--sc);
+  paint-order: stroke fill;
+}
+
+.date-pill {
+  position: absolute;
+  bottom: 6cqh;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 8cqmin);
+  width: max-content;
+  font-size: min(5.5cqh, 4.5cqw);
+  padding: 1cqh 5cqmin;
+  border: 0.4cqmin solid #e6c75a;
+  border-radius: 999px;
+}
+
+#exit-btn {
+  position: absolute;
+  top: 3cqmin;
+  right: 3cqmin;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+  color: #fff;
+  background: rgb(0 0 0 / 0.5);
+  border: none;
+  border-radius: 50%;
+}
+
+#exit-btn[hidden] {
+  display: none;
+}
+
+/* ---------- Fallback fullscreen (no Fullscreen API, e.g. iPhone Safari) ---------- */
+
+body.fs-fallback #controls {
+  display: none;
+}
+
+body.fs-fallback #stage {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  padding: 0;
+}
+
+/* ---------- Small screens: stack stage above controls ---------- */
+
+@media (max-width: 768px) {
+  body {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 100svh;
+  }
+
+  #stage {
+    order: -1;
+    flex: none;
+    height: min(100svh, (100vw - 32px) * 3 / 4 + 32px);
+  }
+
+  #controls {
+    overflow: visible;
+    border-right: none;
+    border-top: 1px solid #d1d5db;
+  }
+}

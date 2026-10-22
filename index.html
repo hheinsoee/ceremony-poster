@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ceremony Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Noto+Sans+Myanmar:wght@400;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside id="controls">
+    <h1>Ceremony Poster</h1>
+
+    <section class="group">
+      <h2>Background</h2>
+      <input type="file" id="bg-input" accept="image/*">
+      <button type="button" id="bg-clear">Clear background</button>
+    </section>
+
+    <div id="line-controls"></div>
+
+    <button type="button" id="start-btn">Start</button>
+  </aside>
+
+  <main id="stage">
+    <div id="poster">
+      <div class="frame">
+        <div class="titles">
+          <p class="line" data-line="0"></p>
+          <p class="line" data-line="1"></p>
+          <p class="line" data-line="2"></p>
+          <p class="line" data-line="3"></p>
+        </div>
+        <p class="line date-pill" data-line="4"></p>
+      </div>
+      <button type="button" id="exit-btn" aria-label="Exit fullscreen" hidden>✕</button>
+    </div>
+  </main>
+
+  <template id="line-template">
+    <fieldset class="group line-group">
+      <legend></legend>
+      <input type="text" class="f-text" aria-label="Text">
+      <div class="row">
+        <label><input type="checkbox" class="f-bold"> Bold</label>
+        <label>Text <input type="color" class="f-color"></label>
+        <label>Stroke <input type="color" class="f-stroke-color"></label>
+      </div>
+      <label class="row">Stroke width
+        <input type="range" class="f-stroke-width" min="0" max="8" step="0.5">
+        <output class="f-stroke-out"></output>
+      </label>
+    </fieldset>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
