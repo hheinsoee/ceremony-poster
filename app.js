@@ -258,6 +258,7 @@ function setBackground(url) {
   if (bgUrl) URL.revokeObjectURL(bgUrl);
   bgUrl = url;
   poster.style.setProperty("--bg-image", url ? `url("${url}")` : "none");
+  document.getElementById("bg-clear").hidden = !url;
 }
 
 bgInput.addEventListener("change", () => {
