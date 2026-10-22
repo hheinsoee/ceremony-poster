@@ -406,6 +406,31 @@ body.fs-fallback #festival {
   to { transform: translateX(var(--sway)) rotate(4deg); }
 }
 
+/* Telegram wish lanterns: one large lantern per message, rising once with its text below */
+.lantern.wish {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  translate: -50% 0;
+  animation-iteration-count: 1;
+}
+
+.wish-text {
+  margin-top: 1cqmin;
+  max-width: 26cqw;
+  width: max-content;
+  padding: 0.3em 0.8em;
+  font: 700 1.6cqw/1.4 Padauk, "Noto Sans Myanmar", sans-serif;
+  color: #fff3c4;
+  text-align: center;
+  overflow-wrap: anywhere;
+  background: rgb(0 0 0 / 0.55);
+  border: 0.15cqw solid #e7a321;
+  border-radius: 0.6em;
+  text-shadow: 0 0 0.4em rgb(255 170 60 / 0.8);
+}
+
 /* Hanging paper lanterns on a dark wire, swinging like a pendulum.
    Two styles: ribbed accordion cylinder and pleated fan (star) lantern. */
 .hanging-lamp {
@@ -556,6 +581,12 @@ body.fs-fallback #festival {
 
   .lantern {
     display: none;
+  }
+
+  .lantern.wish {
+    display: flex;
+    top: auto;
+    bottom: 20%;
   }
 }
 

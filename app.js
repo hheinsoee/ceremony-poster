@@ -1,22 +1,16 @@
-function todayDdMmYyyy() {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
-}
-
 const lines = [
   { label: "Title line 1", text: "ဆေးတက္ကသိုလ်(၂) ရန်ကုန်", bold: true, color: "#f4f1d0", size: 60 },
-  { label: "Title line 2", text: "ကလေးကျန်းမာဌာန", bold: false, color: "#ffffff", size: 50 },
+  { label: "Title line 2", text: "ကလေးကျန်းမာ ပညာဌာန", bold: false, color: "#ffffff", size: 50 },
   { label: "Title line 3", text: "ဆရာကြီး၊ ဆရာမကြီး များအား", bold: false, color: "#fff27a", size: 50 },
   { label: "Title line 4", text: "သီတင်းကျွတ်ဂါရဝ ဆရာကန်တော့ပွဲ", bold: true, color: "#ffbf1f", size: 120 },
-  { label: "Date line", text: todayDdMmYyyy(), bold: false },
+  { label: "Date line", text: "၂၃၊ ၁၀၊ ၂၀၂၆", bold: false },
 ].map((line) => ({ size: 100, color: "#ffffff", strokeColor: "#14532d", strokeWidth: 0, dx: 0, dy: 0, ...line }));
 
 /* ---------- Persistence: line settings → localStorage ---------- */
 
 // Versioned so changed defaults replace older saved layouts.
-const LINES_KEY = "ceremony-poster:lines:v6";
-for (const old of ["", ":v2", ":v3", ":v4", ":v5"]) localStorage.removeItem(`ceremony-poster:lines${old}`);
+const LINES_KEY = "ceremony-poster:lines:v8";
+for (const old of ["", ":v2", ":v3", ":v4", ":v5", ":v6", ":v7"]) localStorage.removeItem(`ceremony-poster:lines${old}`);
 
 try {
   const saved = JSON.parse(localStorage.getItem(LINES_KEY));
@@ -301,6 +295,9 @@ imageSlot({
 
 /* ---------- Thadingyut lights (shown only while presenting; see #festival CSS) ---------- */
 
+// Cloudflare Worker (worker/) relaying text messages from the ceremony Telegram group.
+const WISHES_URL = "https://ceremony-wishes.hheinsoee.workers.dev/messages";
+
 {
   const festival = document.getElementById("festival");
   const rand = (min, max) => min + Math.random() * (max - min);
@@ -352,6 +349,72 @@ imageSlot({
     ][edge];
     add("sparkle", { x, y, size: rand(0.6, 1.2).toFixed(2), dur: `${rand(1.8, 3.6).toFixed(2)}s`, delay: `${-rand(0, 4).toFixed(2)}s` });
   }
+
+  // Telegram wishes: polled only while presenting, each shown on a large rising lantern.
+  const isPresenting = () => !!document.fullscreenElement || document.body.classList.contains("fs-fallback");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const MAX_WISHES = 4;
+  const LAUNCH_GAP = 3000;
+  let lastId = null; // null = next poll only records the baseline, so earlier messages never show
+  const queue = [];
+  let lastLaunch = 0;
+  let inFlight = false;
+  let failing = false;
+
+  const poll = async () => {
+    if (!isPresenting()) {
+      lastId = null;
+      queue.length = 0;
+      return;
+    }
+    if (inFlight) return;
+    inFlight = true;
+    try {
+      const res = await fetch(`${WISHES_URL}?after=${lastId ?? 0}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      failing = false;
+      if (!isPresenting()) return;
+      if (lastId === null) {
+        lastId = data.latest;
+      } else {
+        queue.push(...data.messages);
+        lastId = Math.max(lastId, data.latest);
+      }
+    } catch (err) {
+      if (!failing) console.warn("Wishes poll failed; retrying.", err);
+      failing = true;
+    } finally {
+      inFlight = false;
+    }
+  };
+
+  const launchWish = ({ name, text }) => {
+    const el = document.createElement("div");
+    el.className = "lantern wish";
+    for (const [k, v] of Object.entries({ x: `${rand(12, 80)}%`, size: "1.4", dur: "26s", delay: "0s", sway: "1.5cqmin" })) {
+      el.style.setProperty(`--${k}`, v);
+    }
+    const label = document.createElement("span");
+    label.className = "wish-text";
+    label.textContent = `${name}: ${text}`;
+    el.append(document.createElement("i"), label);
+    // Remove after the rise (not the inner sway); with reduced motion nothing animates, so use a timer.
+    el.addEventListener("animationend", (e) => { if (e.target === el) el.remove(); });
+    if (reducedMotion.matches) setTimeout(() => el.remove(), 8000);
+    festival.append(el);
+  };
+
+  const launchNext = () => {
+    if (!isPresenting() || !queue.length) return;
+    if (Date.now() - lastLaunch < LAUNCH_GAP) return;
+    if (festival.querySelectorAll(".lantern.wish").length >= MAX_WISHES) return;
+    lastLaunch = Date.now();
+    launchWish(queue.shift());
+  };
+
+  setInterval(poll, 4000);
+  setInterval(launchNext, 1000);
 }
 
 /* ---------- Start / presentation ---------- */
