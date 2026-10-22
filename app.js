@@ -279,8 +279,9 @@ function imageSlot({ key, inputId, clearId, encode, apply }) {
   set(localStorage.getItem(storageKey));
 }
 
-// Images were previously kept in IndexedDB; drop that database.
+// Drop storage from earlier versions: IndexedDB images and the removed frame-image slot.
 indexedDB.deleteDatabase("ceremony-poster");
+localStorage.removeItem("ceremony-poster:image:frame");
 
 imageSlot({
   key: "background",
@@ -288,17 +289,6 @@ imageSlot({
   clearId: "bg-clear",
   encode: { maxSide: 1920, type: "image/jpeg", quality: 0.85 },
   apply: (url) => poster.style.setProperty("--bg-image", url ? `url("${url}")` : "none"),
-});
-
-imageSlot({
-  key: "frame",
-  inputId: "frame-input",
-  clearId: "frame-clear",
-  encode: { maxSide: 2560, type: "image/png" },
-  apply: (url) => {
-    poster.style.setProperty("--frame-image", url ? `url("${url}")` : "none");
-    poster.classList.toggle("has-frame-art", !!url);
-  },
 });
 
 /* ---------- Start / presentation ---------- */
