@@ -111,7 +111,21 @@ button {
 #start-bar {
   display: flex;
   justify-content: center;
+  gap: 12px;
   padding: 12px 16px 16px;
+}
+
+#reset-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff;
+  background: transparent;
+  border: 1px solid #6b7280;
+  border-radius: 999px;
+}
+
+#reset-btn:hover {
+  background: rgb(255 255 255 / 0.1);
 }
 
 #start-btn {

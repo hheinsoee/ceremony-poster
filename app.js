@@ -429,6 +429,13 @@ function exitFallback() {
   exitBtn.hidden = true;
 }
 
+// Restore every poster line (text, style, position) to the defaults above; images are kept.
+document.getElementById("reset-btn").addEventListener("click", () => {
+  if (!confirm("Reset all poster text to the defaults?")) return;
+  localStorage.removeItem(LINES_KEY);
+  location.reload();
+});
+
 document.getElementById("start-btn").addEventListener("click", () => {
   document.activeElement?.blur();
   closeToolbar();
