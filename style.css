@@ -231,6 +231,19 @@ body.fs-fallback #poster {
 .corner-bl { bottom: 0; left: 0; background-image: url("img/corner-bl.png?v=2"); }
 .corner-br { bottom: 0; right: 0; background-image: url("img/corner-br.png?v=2"); }
 
+/* Gold line art of the ကန်တော့ပွဲ scene, faint behind the text in the lower part */
+.scene-art {
+  position: absolute;
+  left: 50%;
+  bottom: var(--k);
+  height: 62cqh;
+  aspect-ratio: 908 / 812;
+  translate: -50% 0;
+  background: url("img/kadaw-lineart.png?v=1") center / contain no-repeat;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .titles {
   position: absolute;
   inset: 0 calc(var(--k) + 3cqmin) auto;
