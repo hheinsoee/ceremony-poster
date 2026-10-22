@@ -175,7 +175,7 @@ body.fs-fallback #poster {
 .frame {
   --k: 4.5cqmin;
   position: absolute;
-  inset: 1.5cqmin;
+  inset: 0;
 }
 
 .kanote {
@@ -195,12 +195,12 @@ body.fs-fallback #poster {
 
 .kanote-top {
   top: 0;
-  background-image: url("img/kanote-top.png?v=3");
+  background-image: url("img/kanote-top.png?v=4");
 }
 
 .kanote-bottom {
   bottom: 0;
-  background-image: url("img/kanote-bottom.png?v=3");
+  background-image: url("img/kanote-bottom.png?v=4");
 }
 
 .kanote-left,
@@ -214,12 +214,12 @@ body.fs-fallback #poster {
 
 .kanote-left {
   left: 0;
-  background-image: url("img/kanote-left.png?v=3");
+  background-image: url("img/kanote-left.png?v=4");
 }
 
 .kanote-right {
   right: 0;
-  background-image: url("img/kanote-right.png?v=3");
+  background-image: url("img/kanote-right.png?v=4");
 }
 
 .titles {
