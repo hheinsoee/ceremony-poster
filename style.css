@@ -208,11 +208,64 @@ body.fs-fallback #poster {
   pointer-events: none;
 }
 
+/* Kanote ornament strips inside the gold lines; sides sit between top/bottom so corners don't overlap. */
+.frame {
+  --k: 7cqmin;
+}
+
+.kanote {
+  position: absolute;
+  pointer-events: none;
+  background-size: auto 100%;
+  background-repeat: round no-repeat;
+  background-position: center;
+}
+
+.kanote-top,
+.kanote-bottom {
+  left: 1.6cqmin;
+  right: 1.6cqmin;
+  height: var(--k);
+}
+
+.kanote-top {
+  top: 1.6cqmin;
+  background-image: url("img/kanote-top.png");
+}
+
+.kanote-bottom {
+  bottom: 1.6cqmin;
+  background-image: url("img/kanote-bottom.png");
+}
+
+.kanote-left,
+.kanote-right {
+  top: calc(1.6cqmin + var(--k));
+  bottom: calc(1.6cqmin + var(--k));
+  width: var(--k);
+  background-size: 100% auto;
+  background-repeat: no-repeat round;
+}
+
+.kanote-left {
+  left: 1.6cqmin;
+  background-image: url("img/kanote-left.png");
+}
+
+.kanote-right {
+  right: 1.6cqmin;
+  background-image: url("img/kanote-right.png");
+}
+
+#poster.has-frame-art .kanote {
+  display: none;
+}
+
 .titles {
   position: absolute;
-  inset: 0 4cqmin auto;
+  inset: 0 calc(var(--k) + 3cqmin) auto;
   max-height: 65cqh;
-  padding-top: 8cqh;
+  padding-top: calc(var(--k) + 4cqh);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -289,10 +342,10 @@ body.fs-fallback .line:empty {
 
 .date-pill {
   position: absolute;
-  bottom: 6cqh;
+  bottom: calc(var(--k) + 3cqh);
   left: 50%;
   transform: translateX(-50%);
-  max-width: calc(100% - 8cqmin);
+  max-width: calc(100% - 2 * var(--k) - 6cqmin);
   width: max-content;
   font-size: calc(min(5.5cqh, 4.5cqw) * var(--s));
   padding: 1cqh 5cqmin;
