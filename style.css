@@ -160,11 +160,8 @@ body.fs-fallback #poster {
   width: min(100cqw, 100cqh * 4 / 3);
   height: min(100cqh, 100cqw * 3 / 4);
   overflow: hidden;
-  background-color: #0b4f23;
-  background-image:
-    var(--bg-image),
-    radial-gradient(ellipse at 50% 30%, rgb(255 255 255 / 0.18), transparent 60%),
-    linear-gradient(#1d7a3f, #0b4f23);
+  background-color: #000;
+  background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
