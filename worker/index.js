@@ -4,7 +4,6 @@
 const ALLOWED_ORIGINS = ["https://git.heinsoe.com", "null"]; // "null" = poster opened from file://
 const URL_RE = /https?:\/\/\S+|www\.\S+/gi;
 const MAX_CHARS = 60; // code points, after URL removal; longer messages get a reply instead of a lantern
-const MAX_NAME = 20;
 const MY_DIGITS = "၀၁၂၃၄၅၆၇၈၉";
 const TOO_LONG_REPLY =
   `စာသား ရှည်လွန်းနေပါတယ်။ စာလုံး ${String(MAX_CHARS).replace(/\d/g, (d) => MY_DIGITS[d])} လုံးအတွင်း ပြန်ပို့ပေးပါ။`;
@@ -66,8 +65,7 @@ function collectMessages(updates, chatId, after) {
       if (after > 0) tooLong.push(message.message_id);
       continue;
     }
-    const name = [...(message.from?.first_name ?? "").trim()].slice(0, MAX_NAME).join("") || "Guest";
-    messages.push({ id: update.update_id, name, text });
+    messages.push({ id: update.update_id, text });
   }
   messages.sort((a, b) => a.id - b.id);
   return { latest, messages, tooLong };

@@ -389,7 +389,7 @@ const WISHES_URL = "https://ceremony-wishes.hheinsoee.workers.dev/messages";
     }
   };
 
-  const launchWish = ({ name, text }) => {
+  const launchWish = ({ text }) => {
     const el = document.createElement("div");
     el.className = "lantern wish";
     for (const [k, v] of Object.entries({ x: `${rand(12, 80)}%`, size: "1.4", dur: "26s", delay: "0s", sway: "1.5cqmin" })) {
@@ -397,7 +397,7 @@ const WISHES_URL = "https://ceremony-wishes.hheinsoee.workers.dev/messages";
     }
     const label = document.createElement("span");
     label.className = "wish-text";
-    label.textContent = `${name}: ${text}`;
+    label.textContent = text;
     el.append(document.createElement("i"), label);
     // Remove after the rise (not the inner sway); with reduced motion nothing animates, so use a timer.
     el.addEventListener("animationend", (e) => { if (e.target === el) el.remove(); });
