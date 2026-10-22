@@ -31,22 +31,6 @@ function saveLines() {
   }
 }
 
-const dbReady = new Promise((resolve, reject) => {
-  const req = indexedDB.open("ceremony-poster", 1);
-  req.onupgradeneeded = () => req.result.createObjectStore("files");
-  req.onsuccess = () => resolve(req.result);
-  req.onerror = () => reject(req.error);
-});
-
-async function fileStore(mode, op) {
-  const db = await dbReady;
-  return new Promise((resolve, reject) => {
-    const req = op(db.transaction("files", mode).objectStore("files"));
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
 const poster = document.getElementById("poster");
 const stage = document.getElementById("stage");
 const lineEls = poster.querySelectorAll(".line");
@@ -239,54 +223,70 @@ toolbar.addEventListener("keydown", (e) => {
 addEventListener("resize", placeToolbar);
 addEventListener("scroll", placeToolbar, true);
 
-/* ---------- Image slots: background photo and frame art (e.g. kanote border) ---------- */
+/* ---------- Image slots: background photo and frame art (e.g. kanote border) ----------
+   Stored as base64 data URLs in localStorage. localStorage holds ~5 MB per site and base64
+   adds ~33%, so uploads are downscaled before saving. */
 
-function imageSlot({ key, inputId, clearId, apply }) {
+function toDataUrl(img, { maxSide, type, quality }) {
+  const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(img.naturalWidth * scale);
+  canvas.height = Math.round(img.naturalHeight * scale);
+  canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL(type, quality);
+}
+
+function imageSlot({ key, inputId, clearId, encode, apply }) {
+  const storageKey = `ceremony-poster:image:${key}`;
   const input = document.getElementById(inputId);
   const clearBtn = document.getElementById(clearId);
-  let url = null;
 
-  const set = (next) => {
-    if (url) URL.revokeObjectURL(url);
-    url = next;
+  const set = (url) => {
     apply(url);
     clearBtn.hidden = !url;
   };
-  const warn = (what) => (err) => console.warn(`Could not ${what} ${key}`, err);
 
   input.addEventListener("change", () => {
     const file = input.files[0];
+    input.value = "";
     if (!file) return;
-    const next = URL.createObjectURL(file);
-    // Some formats (e.g. iPhone HEIC in Chrome/Firefox) pass the picker but can't be decoded.
-    const probe = new Image();
-    probe.onload = () => {
-      set(next);
-      fileStore("readwrite", (s) => s.put(file, key)).catch(warn("save"));
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const dataUrl = toDataUrl(img, encode);
+      try {
+        localStorage.setItem(storageKey, dataUrl);
+      } catch {
+        localStorage.removeItem(storageKey); // don't resurrect the previous image on reload
+        alert("Browser storage is full, so this image won't be kept after reload.\nRemove the other image or use a smaller one.");
+      }
+      set(dataUrl);
     };
-    probe.onerror = () => {
-      URL.revokeObjectURL(next);
-      input.value = "";
+    // Some formats (e.g. iPhone HEIC in Chrome/Firefox) pass the picker but can't be decoded.
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
       alert(`"${file.name}" can't be displayed in this browser (HEIC photos only work in Safari).\nPlease use a JPG, PNG or WebP image.`);
     };
-    probe.src = next;
+    img.src = objectUrl;
   });
 
   clearBtn.addEventListener("click", () => {
+    localStorage.removeItem(storageKey);
     set(null);
-    input.value = "";
-    fileStore("readwrite", (s) => s.delete(key)).catch(warn("delete"));
   });
 
-  fileStore("readonly", (s) => s.get(key))
-    .then((blob) => blob && !url && set(URL.createObjectURL(blob)))
-    .catch(warn("load"));
+  set(localStorage.getItem(storageKey));
 }
+
+// Images were previously kept in IndexedDB; drop that database.
+indexedDB.deleteDatabase("ceremony-poster");
 
 imageSlot({
   key: "background",
   inputId: "bg-input",
   clearId: "bg-clear",
+  encode: { maxSide: 1920, type: "image/jpeg", quality: 0.85 },
   apply: (url) => poster.style.setProperty("--bg-image", url ? `url("${url}")` : "none"),
 });
 
@@ -294,6 +294,7 @@ imageSlot({
   key: "frame",
   inputId: "frame-input",
   clearId: "frame-clear",
+  encode: { maxSide: 2560, type: "image/png" },
   apply: (url) => {
     poster.style.setProperty("--frame-image", url ? `url("${url}")` : "none");
     poster.classList.toggle("has-frame-art", !!url);

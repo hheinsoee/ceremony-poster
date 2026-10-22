@@ -184,7 +184,7 @@ body.fs-fallback #poster {
 
 /* Content area; kanote strips run along its edges, sides between top/bottom so corners don't overlap. */
 .frame {
-  --k: 7cqmin;
+  --k: 4.5cqmin;
   position: absolute;
   inset: 1.5cqmin;
 }
