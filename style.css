@@ -182,35 +182,11 @@ body.fs-fallback #poster {
   pointer-events: none;
 }
 
-#poster.has-frame-art .frame,
-#poster.has-frame-art .frame::before {
-  border-color: transparent;
-  box-shadow: none;
-}
-
-/* Double gold frame with dark keyline */
-.frame {
-  position: absolute;
-  inset: 1.5cqmin;
-  border: 0.9cqmin solid #c9a227;
-  border-radius: 2cqmin;
-  box-shadow:
-    0 0 0 0.3cqmin #7a5c10 inset,
-    0 0 0 0.3cqmin #7a5c10;
-}
-
-.frame::before {
-  content: "";
-  position: absolute;
-  inset: 1cqmin;
-  border: 0.35cqmin solid #e6c75a;
-  border-radius: 1.4cqmin;
-  pointer-events: none;
-}
-
-/* Kanote ornament strips inside the gold lines; sides sit between top/bottom so corners don't overlap. */
+/* Content area; kanote strips run along its edges, sides between top/bottom so corners don't overlap. */
 .frame {
   --k: 7cqmin;
+  position: absolute;
+  inset: 1.5cqmin;
 }
 
 .kanote {
@@ -223,37 +199,37 @@ body.fs-fallback #poster {
 
 .kanote-top,
 .kanote-bottom {
-  left: 1.6cqmin;
-  right: 1.6cqmin;
+  left: 0;
+  right: 0;
   height: var(--k);
 }
 
 .kanote-top {
-  top: 1.6cqmin;
+  top: 0;
   background-image: url("img/kanote-top.png");
 }
 
 .kanote-bottom {
-  bottom: 1.6cqmin;
+  bottom: 0;
   background-image: url("img/kanote-bottom.png");
 }
 
 .kanote-left,
 .kanote-right {
-  top: calc(1.6cqmin + var(--k));
-  bottom: calc(1.6cqmin + var(--k));
+  top: var(--k);
+  bottom: var(--k);
   width: var(--k);
   background-size: 100% auto;
   background-repeat: no-repeat round;
 }
 
 .kanote-left {
-  left: 1.6cqmin;
+  left: 0;
   background-image: url("img/kanote-left.png");
 }
 
 .kanote-right {
-  right: 1.6cqmin;
+  right: 0;
   background-image: url("img/kanote-right.png");
 }
 
