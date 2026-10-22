@@ -18,7 +18,7 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 14px;
   color: #1f2937;
-  background: #e5e7eb;
+  background: #000;
 }
 
 .group {
@@ -97,12 +97,11 @@ button {
 
 /* ---------- Preview stage ---------- */
 
-/* Stage height: whole screen minus the Start bar (66px), but no taller than the
-   4:3 poster needs at full width, so the Start button sits right under it. */
+/* Stage fills the screen above the Start bar; the poster fills the stage at any ratio. */
 #stage {
   container-type: size;
-  flex: none;
-  height: min(calc(100svh - 66px), calc((100vw - 32px) * 3 / 4 + 16px));
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,23 +141,20 @@ button {
   padding: 0;
 }
 
-/* Presenting: poster fills the whole screen, whatever its ratio */
 #stage:fullscreen #poster,
 body.fs-fallback #poster {
-  width: 100cqw;
-  height: 100cqh;
   box-shadow: none;
 }
 
-/* ---------- Poster (4:3 preview; everything inside scales with cq units) ---------- */
+/* ---------- Poster (fills the stage at any ratio; everything inside scales with cq units) ---------- */
 
 #poster {
   --bg-image: none;
   container-type: size;
   position: relative;
   flex: none;
-  width: min(100cqw, 100cqh * 4 / 3);
-  height: min(100cqh, 100cqw * 3 / 4);
+  width: 100cqw;
+  height: 100cqh;
   overflow: hidden;
   background-color: #000;
   background-image: var(--bg-image);
@@ -171,6 +167,9 @@ body.fs-fallback #poster {
 /* Content area; kanote strips run along its edges, sides between top/bottom so corners don't overlap. */
 .frame {
   --k: 4.5cqmin;
+  /* corner ornament box (image is 460x400) */
+  --ch: 16cqmin;
+  --cw: calc(var(--ch) * 1.15);
   position: absolute;
   inset: 0;
 }
@@ -185,8 +184,8 @@ body.fs-fallback #poster {
 
 .kanote-top,
 .kanote-bottom {
-  left: 0;
-  right: 0;
+  left: var(--cw);
+  right: var(--cw);
   height: var(--k);
 }
 
@@ -202,8 +201,8 @@ body.fs-fallback #poster {
 
 .kanote-left,
 .kanote-right {
-  top: var(--k);
-  bottom: var(--k);
+  top: var(--ch);
+  bottom: var(--ch);
   width: var(--k);
   background-size: 100% auto;
   background-repeat: no-repeat round;
@@ -219,15 +218,34 @@ body.fs-fallback #poster {
   background-image: url("img/kanote-right.png?v=4");
 }
 
+.corner {
+  position: absolute;
+  width: var(--cw);
+  height: var(--ch);
+  background: center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.corner-tl { top: 0; left: 0; background-image: url("img/corner-tl.png?v=2"); }
+.corner-tr { top: 0; right: 0; background-image: url("img/corner-tr.png?v=2"); }
+.corner-bl { bottom: 0; left: 0; background-image: url("img/corner-bl.png?v=2"); }
+.corner-br { bottom: 0; right: 0; background-image: url("img/corner-br.png?v=2"); }
+
 .titles {
   position: absolute;
   inset: 0 calc(var(--k) + 3cqmin) auto;
   max-height: 65cqh;
-  padding-top: calc(var(--k) + 4cqh);
+  padding-top: calc(var(--k) + 1.5cqh);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2cqh;
+  gap: 1.2cqh;
+}
+
+.logo {
+  height: 13cqh;
+  width: auto;
+  pointer-events: none;
 }
 
 .line {
@@ -240,7 +258,7 @@ body.fs-fallback #poster {
   --dy: 0;
   margin: 0;
   font-family: Padauk, "Noto Sans Myanmar", sans-serif;
-  font-size: calc(min(7.5cqh, 6cqw) * var(--s));
+  font-size: calc(3.4cqw * var(--s)); /* poster width (= screen width when presenting) */
   line-height: 1.5;
   text-align: center;
   overflow-wrap: break-word;
@@ -298,17 +316,244 @@ body.fs-fallback .line:empty {
   display: none;
 }
 
+/* Title line 4 (main title): gold floral ornament above, mirrored copy below, text between */
+.line[data-line="3"] {
+  /* Ornament size is tied to the poster, not the text, so the text-size slider leaves it alone. */
+  --orn-h: 3.6cqw;
+  white-space: nowrap;
+  text-shadow: 0 0 0.25em rgb(255 190 40 / 0.55), 0 0 0.6em rgb(255 150 0 / 0.35);
+  min-width: calc(var(--orn-h) * 3.86);
+  padding: calc(var(--orn-h) * 0.6) 0.3em;
+  background:
+    url("img/title-ornament-top.png?v=1") top center / auto var(--orn-h) no-repeat,
+    url("img/title-ornament-bottom.png?v=1") bottom center / auto var(--orn-h) no-repeat;
+}
+
 .date-pill {
   position: absolute;
-  bottom: calc(var(--k) + 3cqh);
+  bottom: calc(var(--k) + 1.5cqh);
   left: 50%;
   transform: translateX(-50%);
   max-width: calc(100% - 2 * var(--k) - 6cqmin);
+  /* Gold frame plate (img 420x179 at 1x): text sits in its inner box,
+     which starts 32% from the top and ends 20% from the bottom. */
+  box-sizing: border-box;
+  min-width: 6.8em;
+  height: 2.9em;
   width: max-content;
-  font-size: calc(min(5.5cqh, 4.5cqw) * var(--s));
-  padding: 1cqh 5cqmin;
-  border: 0.4cqmin solid #e6c75a;
-  border-radius: 999px;
+  padding: 0.94em 0.7em 0.58em;
+  line-height: 1.38em;
+  white-space: nowrap;
+  font-size: calc(2.5cqw * var(--s));
+  background: url("img/date-frame.png?v=1") center / 100% 100% no-repeat;
+}
+
+/* ---------- Thadingyut lights (presentation only; transform/opacity animations) ---------- */
+
+#festival {
+  position: absolute;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#stage:fullscreen #festival,
+body.fs-fallback #festival {
+  display: block;
+}
+
+/* Sky lanterns: outer element rises, inner sways */
+.lantern {
+  position: absolute;
+  left: var(--x);
+  top: 100%;
+  animation: lantern-rise var(--dur) linear var(--delay) infinite;
+}
+
+.lantern i {
+  display: block;
+  width: calc(3.2cqmin * var(--size));
+  height: calc(4.2cqmin * var(--size));
+  border-radius: 45% 45% 30% 30%;
+  background: radial-gradient(ellipse at 50% 70%, #fff6d5 0%, #ffc56b 35%, #e8590c 100%);
+  box-shadow: 0 0 calc(4cqmin * var(--size)) calc(1cqmin * var(--size)) rgb(255 170 60 / 0.55);
+  animation: lantern-sway calc(var(--dur) / 4) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes lantern-rise {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(-115cqh); opacity: 0; }
+}
+
+@keyframes lantern-sway {
+  from { transform: translateX(calc(-1 * var(--sway))) rotate(-4deg); }
+  to { transform: translateX(var(--sway)) rotate(4deg); }
+}
+
+/* Hanging paper lanterns on a dark wire, swinging like a pendulum.
+   Two styles: ribbed accordion cylinder and pleated fan (star) lantern. */
+.hanging-lamp {
+  position: absolute;
+  left: var(--x);
+  top: calc(var(--k) * 0.5);
+  width: 0.2cqmin;
+  height: var(--len);
+  background: #3a2a14;
+  transform-origin: 50% 0;
+  animation: lamp-swing var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+.hanging-lamp i {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  scale: 0.6; /* shrinks toward the string end (transform-origin set per style) */
+  animation: lamp-blink 1.4s ease-in-out var(--delay) infinite alternate;
+}
+
+.lamp-fan::after {
+  animation: lamp-blink 1.4s ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes lamp-blink {
+  from { opacity: 1; }
+  to { opacity: 0.3; }
+}
+
+.lamp-cylinder i { transform-origin: 50% -1.6cqmin; }
+.lamp-fan i { transform-origin: 50% 0.4cqmin; }
+
+/* Accordion cylinder: horizontal ribs, pale rims, wire bail */
+.lamp-cylinder i {
+  width: 5.4cqmin;
+  height: 6.6cqmin;
+  margin: 1.6cqmin 0 0 -2.7cqmin;
+  border-radius: 0.8cqmin;
+  background:
+    linear-gradient(#fff3d1, #f2dfb0) top / 100% 7% no-repeat,
+    linear-gradient(#f2dfb0, #fff3d1) bottom / 100% 7% no-repeat,
+    radial-gradient(ellipse at 50% 55%, rgb(255 250 220 / 0.9), transparent 70%),
+    repeating-linear-gradient(#ffd23f 0 0.42cqmin, #f39a12 0.42cqmin 0.6cqmin);
+  box-shadow: 0 0 5cqmin 1cqmin rgb(255 175 40 / 0.55);
+}
+
+.lamp-cylinder i::before { /* wire bail from string to the top rim */
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: -1.6cqmin;
+  height: 1.7cqmin;
+  border: 0.2cqmin solid #3a2a14;
+  border-bottom: none;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+/* Pleated fan lantern: radial folds clipped to a zig-zag star */
+.lamp-fan i {
+  width: 7.5cqmin;
+  height: 7.5cqmin;
+  margin: -0.4cqmin 0 0 -3.75cqmin;
+  background:
+    radial-gradient(circle, #c9a227 0 5%, transparent 6%),
+    radial-gradient(circle, rgb(255 236 200 / 0.95) 0 18%, transparent 60%),
+    repeating-conic-gradient(#fff4f8 0deg 11.25deg, #e8c4d6 11.25deg 22.5deg);
+  clip-path: polygon(50% 0%, 57.4% 12.7%, 69.1% 3.8%, 71.1% 18.4%, 85.4% 14.6%, 81.6% 28.9%, 96.2% 30.9%, 87.3% 42.6%, 100% 50%, 87.3% 57.4%, 96.2% 69.1%, 81.6% 71.1%, 85.4% 85.4%, 71.1% 81.6%, 69.1% 96.2%, 57.4% 87.3%, 50% 100%, 42.6% 87.3%, 30.9% 96.2%, 28.9% 81.6%, 14.6% 85.4%, 18.4% 71.1%, 3.8% 69.1%, 12.7% 57.4%, 0% 50%, 12.7% 42.6%, 3.8% 30.9%, 18.4% 28.9%, 14.6% 14.6%, 28.9% 18.4%, 30.9% 3.8%, 42.6% 12.7%);
+}
+
+.lamp-fan::after { /* soft glow behind the fan (clip-path would cut a box-shadow) */
+  content: "";
+  position: absolute;
+  top: calc(100% + 2cqmin);
+  scale: 0.6;
+  left: 50%;
+  width: 9cqmin;
+  height: 9cqmin;
+  margin: -4.5cqmin 0 0 -4.5cqmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 210 230 / 0.35), transparent 70%);
+  z-index: -1;
+}
+
+@keyframes lamp-swing {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(6deg); }
+}
+
+/* Oil lamps along the bottom, either side of the date plate */
+.oil-lamp {
+  position: absolute;
+  left: var(--x);
+  bottom: calc(var(--k) + 1cqh);
+  width: 4cqmin;
+  height: 4.5cqmin;
+  translate: -50% 0;
+}
+
+.oil-lamp::before { /* clay bowl */
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1.6cqmin;
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  background: linear-gradient(#b5651d, #6b3410);
+}
+
+.oil-lamp::after { /* flame */
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 1.4cqmin;
+  width: 1.4cqmin;
+  height: 2.8cqmin;
+  margin-left: -0.7cqmin;
+  border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+  background: radial-gradient(ellipse at 50% 75%, #fffbe6 0%, #ffd34d 40%, #ff7b00 100%);
+  box-shadow: 0 0 3cqmin 0.8cqmin rgb(255 160 40 / 0.6);
+  transform-origin: 50% 100%;
+  animation: flicker var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes flicker {
+  0% { transform: scale(1, 1) rotate(-2deg); opacity: 0.95; }
+  35% { transform: scale(0.92, 1.12) rotate(2deg); opacity: 1; }
+  70% { transform: scale(1.05, 0.9) rotate(-1deg); opacity: 0.85; }
+  100% { transform: scale(0.96, 1.06) rotate(1deg); opacity: 1; }
+}
+
+/* Twinkling gold sparkles over the kanote border */
+.sparkle {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: calc(2.4cqmin * var(--size));
+  height: calc(2.4cqmin * var(--size));
+  translate: -50% -50%;
+  background:
+    radial-gradient(circle, #fff 0 12%, transparent 30%),
+    linear-gradient(#fff6c8, #fff6c8) center / 10% 100% no-repeat,
+    linear-gradient(#fff6c8, #fff6c8) center / 100% 10% no-repeat;
+  border-radius: 50%;
+  opacity: 0;
+  animation: twinkle var(--dur) ease-in-out var(--delay) infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { transform: scale(0.2) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1) rotate(45deg); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #festival * {
+    animation: none !important;
+  }
+
+  .lantern {
+    display: none;
+  }
 }
 
 #exit-btn {

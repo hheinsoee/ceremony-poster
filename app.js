@@ -1,14 +1,22 @@
+function todayDdMmYyyy() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
+}
+
 const lines = [
-  { label: "Title line 1", text: "သီတင်းကျွတ်ပွဲတော်", bold: true },
-  { label: "Title line 2", text: "ဆရာ၊ မိဘ၊ သက်ကြီးဝါကြီးများ", bold: true },
-  { label: "Title line 3", text: "ပူဇော်ကန်တော့ပွဲ", bold: true },
-  { label: "Title line 4", text: "၂၀၂၆ ခုနှစ်", bold: true },
-  { label: "Date line", text: "နေ့စွဲ · နေရာ", bold: false },
+  { label: "Title line 1", text: "ဆေးတက္ကသိုလ်(၂) ရန်ကုန်", bold: true, color: "#f4f1d0", size: 70 },
+  { label: "Title line 2", text: "ကလေးကျန်းမာဌာန", bold: false, color: "#ffffff", size: 65 },
+  { label: "Title line 3", text: "ဆရာကြီး၊ ဆရာမကြီး များအား", bold: false, color: "#fff27a", size: 65 },
+  { label: "Title line 4", text: "သီတင်းကျွတ်ဂါရဝ ဆရာကန်တော့ပွဲ", bold: true, color: "#ffbf1f", size: 140 },
+  { label: "Date line", text: todayDdMmYyyy(), bold: false },
 ].map((line) => ({ size: 100, color: "#ffffff", strokeColor: "#14532d", strokeWidth: 0, dx: 0, dy: 0, ...line }));
 
-/* ---------- Persistence: line settings → localStorage, background Blob → IndexedDB ---------- */
+/* ---------- Persistence: line settings → localStorage ---------- */
 
-const LINES_KEY = "ceremony-poster:lines";
+// Versioned so changed defaults replace older saved layouts.
+const LINES_KEY = "ceremony-poster:lines:v5";
+for (const old of ["", ":v2", ":v3", ":v4"]) localStorage.removeItem(`ceremony-poster:lines${old}`);
 
 try {
   const saved = JSON.parse(localStorage.getItem(LINES_KEY));
@@ -290,6 +298,61 @@ imageSlot({
   encode: { maxSide: 1920, type: "image/jpeg", quality: 0.85 },
   apply: (url) => poster.style.setProperty("--bg-image", url ? `url("${url}")` : "none"),
 });
+
+/* ---------- Thadingyut lights (shown only while presenting; see #festival CSS) ---------- */
+
+{
+  const festival = document.getElementById("festival");
+  const rand = (min, max) => min + Math.random() * (max - min);
+  const add = (cls, vars, inner = false) => {
+    const el = document.createElement("div");
+    el.className = cls;
+    for (const [k, v] of Object.entries(vars)) el.style.setProperty(`--${k}`, v);
+    if (inner) el.append(document.createElement("i"));
+    festival.append(el);
+  };
+
+  // Sky lanterns: negative delays so some are already mid-flight when presenting starts.
+  for (let i = 0; i < 6; i++) {
+    const dur = rand(16, 30);
+    add("lantern", {
+      x: `${rand(4, 94)}%`,
+      size: rand(0.6, 1.3).toFixed(2),
+      dur: `${dur}s`,
+      delay: `${-rand(0, dur)}s`,
+      sway: `${rand(1, 3).toFixed(1)}cqmin`,
+    }, true);
+  }
+
+  // Hanging lamps swinging from the top border, kept clear of the centred title.
+  for (const [x, len, style] of [[18, 9, "fan"], [27, 15, "cylinder"], [73, 13, "fan"], [82, 8, "cylinder"]]) {
+    add(`hanging-lamp lamp-${style}`, {
+      x: `${x}%`,
+      len: `${len}cqh`,
+      dur: `${rand(2.8, 4).toFixed(2)}s`,
+      delay: `${-rand(0, 4).toFixed(2)}s`,
+    }, true);
+  }
+
+  // Oil lamps either side of the date plate, clear of the corner ornaments.
+  for (const x of [19, 24.5, 30, 70, 75.5, 81]) {
+    add("oil-lamp", { x: `${x}%`, dur: `${rand(0.25, 0.45).toFixed(2)}s`, delay: `${-rand(0, 1).toFixed(2)}s` });
+  }
+
+  // Sparkles scattered along the kanote border band.
+  for (let i = 0; i < 28; i++) {
+    const along = `${rand(2, 98)}%`;
+    const across = `calc(var(--k) * ${rand(0.1, 0.9).toFixed(2)})`;
+    const edge = i % 4;
+    const [x, y] = [
+      [along, across],
+      [along, `calc(100% - ${across})`],
+      [across, along],
+      [`calc(100% - ${across})`, along],
+    ][edge];
+    add("sparkle", { x, y, size: rand(0.6, 1.2).toFixed(2), dur: `${rand(1.8, 3.6).toFixed(2)}s`, delay: `${-rand(0, 4).toFixed(2)}s` });
+  }
+}
 
 /* ---------- Start / presentation ---------- */
 
