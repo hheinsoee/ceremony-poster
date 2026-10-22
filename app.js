@@ -62,10 +62,9 @@ const stage = document.getElementById("stage");
 const lineEls = poster.querySelectorAll(".line");
 const exitBtn = document.getElementById("exit-btn");
 
-function render(i) {
+function applyStyle(i) {
   const line = lines[i];
   const el = lineEls[i];
-  el.textContent = line.text;
   el.style.setProperty("--c", line.color);
   el.style.setProperty("--w", line.bold ? "700" : "400");
   el.style.setProperty("--sc", line.strokeColor);
@@ -83,9 +82,36 @@ lines.forEach((line, i) => {
   const q = (cls) => group.querySelector(cls);
   const strokeOut = q(".f-stroke-out");
   const sizeOut = q(".f-size-out");
+  const el = lineEls[i];
+
+  // Inline text editing directly on the poster
+  el.textContent = line.text;
+  el.contentEditable = "plaintext-only";
+  if (el.contentEditable !== "plaintext-only") el.contentEditable = "true";
+  el.spellcheck = false;
+  el.addEventListener("input", () => {
+    line.text = el.textContent;
+    if (!line.text) el.replaceChildren(); // drop stray <br> so :empty matches
+    saveLines();
+  });
+  el.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      el.blur();
+    }
+  });
+  el.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text/plain").replace(/\s*\n\s*/g, " ");
+    document.execCommand("insertText", false, text);
+  });
+  el.addEventListener("focus", () => {
+    group.classList.add("active");
+    group.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+  el.addEventListener("blur", () => group.classList.remove("active"));
 
   q("legend").textContent = line.label;
-  q(".f-text").value = line.text;
   q(".f-bold").checked = line.bold;
   q(".f-color").value = line.color;
   q(".f-stroke-color").value = line.strokeColor;
@@ -97,11 +123,10 @@ lines.forEach((line, i) => {
   const bind = (cls, event, apply) =>
     q(cls).addEventListener(event, (e) => {
       apply(e.target);
-      render(i);
+      applyStyle(i);
       saveLines();
     });
 
-  bind(".f-text", "input", (t) => (line.text = t.value));
   bind(".f-bold", "change", (t) => (line.bold = t.checked));
   bind(".f-color", "input", (t) => (line.color = t.value));
   bind(".f-stroke-color", "input", (t) => (line.strokeColor = t.value));
@@ -115,7 +140,7 @@ lines.forEach((line, i) => {
   });
 
   lineControls.append(group);
-  render(i);
+  applyStyle(i);
 });
 
 /* ---------- Background ---------- */
@@ -170,6 +195,7 @@ function exitFallback() {
 }
 
 document.getElementById("start-btn").addEventListener("click", () => {
+  document.activeElement?.blur();
   if (stage.requestFullscreen) {
     stage.requestFullscreen().catch(enterFallback);
   } else {

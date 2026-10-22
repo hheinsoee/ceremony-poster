@@ -72,12 +72,14 @@ body {
   gap: 4px;
 }
 
-.f-text {
-  width: 100%;
-  padding: 6px 8px;
-  font: 15px/1.6 Padauk, "Noto Sans Myanmar", sans-serif;
-  border: 1px solid #9ca3af;
-  border-radius: 6px;
+.hint {
+  margin: 0;
+  color: #4b5563;
+}
+
+.line-group.active {
+  border-color: #15803d;
+  box-shadow: 0 0 0 1px #15803d;
 }
 
 label.row {
@@ -214,6 +216,35 @@ body.fs-fallback #poster {
   font-weight: var(--w);
   -webkit-text-stroke: var(--sw) var(--sc);
   paint-order: stroke fill;
+}
+
+/* Inline editing (editor only) */
+.line[contenteditable] {
+  cursor: text;
+  outline: none;
+}
+
+.line[contenteditable]:hover,
+.line[contenteditable]:focus {
+  outline: 0.3cqmin dashed rgb(255 255 255 / 0.7);
+  outline-offset: 0.6cqmin;
+}
+
+.line:empty {
+  min-width: 3em;
+  min-height: 1.5em;
+  outline: 0.3cqmin dashed rgb(255 255 255 / 0.4);
+}
+
+#stage:fullscreen .line,
+body.fs-fallback .line {
+  pointer-events: none;
+  outline: none;
+}
+
+#stage:fullscreen .line:empty,
+body.fs-fallback .line:empty {
+  display: none;
 }
 
 .date-pill {
