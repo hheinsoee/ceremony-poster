@@ -72,32 +72,24 @@ function applyStyle(i) {
   el.style.setProperty("--s", line.size / 100);
 }
 
-/* ---------- Line controls ---------- */
+/* ---------- Inline text editing on the poster ---------- */
 
-const template = document.getElementById("line-template");
-const lineControls = document.getElementById("line-controls");
-
-lines.forEach((line, i) => {
-  const group = template.content.firstElementChild.cloneNode(true);
-  const q = (cls) => group.querySelector(cls);
-  const strokeOut = q(".f-stroke-out");
-  const sizeOut = q(".f-size-out");
-  const el = lineEls[i];
-
-  // Inline text editing directly on the poster
-  el.textContent = line.text;
+lineEls.forEach((el, i) => {
+  el.textContent = lines[i].text;
   el.contentEditable = "plaintext-only";
   if (el.contentEditable !== "plaintext-only") el.contentEditable = "true";
   el.spellcheck = false;
   el.addEventListener("input", () => {
-    line.text = el.textContent;
-    if (!line.text) el.replaceChildren(); // drop stray <br> so :empty matches
+    lines[i].text = el.textContent;
+    if (!lines[i].text) el.replaceChildren(); // drop stray <br> so :empty matches
     saveLines();
+    placeToolbar();
   });
   el.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" || e.key === "Escape") {
       e.preventDefault();
       el.blur();
+      closeToolbar();
     }
   });
   el.addEventListener("paste", (e) => {
@@ -105,43 +97,82 @@ lines.forEach((line, i) => {
     const text = e.clipboardData.getData("text/plain").replace(/\s*\n\s*/g, " ");
     document.execCommand("insertText", false, text);
   });
-  el.addEventListener("focus", () => {
-    group.classList.add("active");
-    group.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  });
-  el.addEventListener("blur", () => group.classList.remove("active"));
-
-  q("legend").textContent = line.label;
-  q(".f-bold").checked = line.bold;
-  q(".f-color").value = line.color;
-  q(".f-stroke-color").value = line.strokeColor;
-  q(".f-stroke-width").value = line.strokeWidth;
-  strokeOut.textContent = line.strokeWidth;
-  q(".f-size").value = line.size;
-  sizeOut.textContent = `${line.size}%`;
-
-  const bind = (cls, event, apply) =>
-    q(cls).addEventListener(event, (e) => {
-      apply(e.target);
-      applyStyle(i);
-      saveLines();
-    });
-
-  bind(".f-bold", "change", (t) => (line.bold = t.checked));
-  bind(".f-color", "input", (t) => (line.color = t.value));
-  bind(".f-stroke-color", "input", (t) => (line.strokeColor = t.value));
-  bind(".f-stroke-width", "input", (t) => {
-    line.strokeWidth = Number(t.value);
-    strokeOut.textContent = t.value;
-  });
-  bind(".f-size", "input", (t) => {
-    line.size = Number(t.value);
-    sizeOut.textContent = `${t.value}%`;
-  });
-
-  lineControls.append(group);
+  el.addEventListener("focus", () => openToolbar(i));
   applyStyle(i);
 });
+
+/* ---------- Floating style toolbar for the line being edited ---------- */
+
+const toolbar = document.getElementById("line-toolbar");
+const tq = (cls) => toolbar.querySelector(cls);
+let current = -1;
+
+function openToolbar(i) {
+  current = i;
+  const line = lines[i];
+  tq("#toolbar-title").textContent = line.label;
+  tq(".f-bold").checked = line.bold;
+  tq(".f-color").value = line.color;
+  tq(".f-stroke-color").value = line.strokeColor;
+  tq(".f-stroke-width").value = line.strokeWidth;
+  tq(".f-stroke-out").textContent = line.strokeWidth;
+  tq(".f-size").value = line.size;
+  tq(".f-size-out").textContent = `${line.size}%`;
+  toolbar.hidden = false;
+  placeToolbar();
+}
+
+function closeToolbar() {
+  current = -1;
+  toolbar.hidden = true;
+}
+
+// Below the line if it fits, otherwise above; clamped to the viewport.
+function placeToolbar() {
+  if (current < 0) return;
+  const gap = 12;
+  const margin = 8;
+  const line = lineEls[current].getBoundingClientRect();
+  const { width, height } = toolbar.getBoundingClientRect();
+  let top = line.bottom + gap;
+  if (top + height > innerHeight - margin) top = line.top - gap - height;
+  const left = line.left + line.width / 2 - width / 2;
+  toolbar.style.top = `${Math.max(margin, top)}px`;
+  toolbar.style.left = `${Math.min(Math.max(margin, left), innerWidth - width - margin)}px`;
+}
+
+const bind = (cls, event, apply) =>
+  tq(cls).addEventListener(event, (e) => {
+    if (current < 0) return;
+    apply(lines[current], e.target);
+    applyStyle(current);
+    saveLines();
+    placeToolbar();
+  });
+
+bind(".f-bold", "change", (line, t) => (line.bold = t.checked));
+bind(".f-color", "input", (line, t) => (line.color = t.value));
+bind(".f-stroke-color", "input", (line, t) => (line.strokeColor = t.value));
+bind(".f-stroke-width", "input", (line, t) => {
+  line.strokeWidth = Number(t.value);
+  tq(".f-stroke-out").textContent = t.value;
+});
+bind(".f-size", "input", (line, t) => {
+  line.size = Number(t.value);
+  tq(".f-size-out").textContent = `${t.value}%`;
+});
+
+// Close when interacting with anything other than the toolbar or another poster line.
+document.addEventListener("pointerdown", (e) => {
+  if (current >= 0 && !toolbar.contains(e.target) && !e.target.closest(".line[contenteditable]")) {
+    closeToolbar();
+  }
+});
+toolbar.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeToolbar();
+});
+addEventListener("resize", placeToolbar);
+addEventListener("scroll", placeToolbar, true);
 
 /* ---------- Background ---------- */
 
@@ -196,6 +227,7 @@ function exitFallback() {
 
 document.getElementById("start-btn").addEventListener("click", () => {
   document.activeElement?.blur();
+  closeToolbar();
   if (stage.requestFullscreen) {
     stage.requestFullscreen().catch(enterFallback);
   } else {

@@ -77,9 +77,22 @@ body {
   color: #4b5563;
 }
 
-.line-group.active {
+#line-toolbar {
+  position: fixed;
+  z-index: 40;
+  width: 300px;
+  background: #fff;
   border-color: #15803d;
-  box-shadow: 0 0 0 1px #15803d;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
+}
+
+#line-toolbar[hidden] {
+  display: none;
+}
+
+#toolbar-title {
+  font-size: 13px;
+  font-weight: 600;
 }
 
 label.row {
@@ -218,10 +231,18 @@ body.fs-fallback #poster {
   paint-order: stroke fill;
 }
 
-/* Inline editing (editor only) */
+/* Inline editing (editor only). The poster itself is non-selectable so clicking
+   its background doesn't snap the caret into the nearest line. */
+#poster {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .line[contenteditable] {
   cursor: text;
   outline: none;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .line[contenteditable]:hover,
